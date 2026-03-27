@@ -29,11 +29,13 @@ def load_artifacts():
         model = pickle.load(f)
     with open(encoder_path, "rb") as f:
         le = pickle.load(f)
+    with open(os.path.join(BASE_DIR, "scaler.pkl"), "rb") as f:  # ← scaler.pkl must exist
+        scaler = pickle.load(f)
 
-    return model, le
+    return model, le, scaler  # ← must return all 3
 
-# ✅ FIX: Actually call the function and unpack into module-level variables
-model, le = load_artifacts()
+model, le, scaler = load_artifacts() 
+    
 
 # ============================================================
 # Bean Class Info
