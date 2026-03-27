@@ -17,7 +17,7 @@ st.set_page_config(
 # ============================================================
 # Load Model & Encoder
 # ============================================================
-import os   # ✅ add this at the top of your file
+import os   
 
 @st.cache_resource
 def load_artifacts():
@@ -33,7 +33,7 @@ def load_artifacts():
 
     return model, le
 #========================================================
-@st.cache_resource
+
 #def load_artifacts():
 #    with open("svm_tuned.pkl", "rb") as f:
 #        model = pickle.load(f)
@@ -41,7 +41,7 @@ def load_artifacts():
 #        le = pickle.load(f)
 #    return model, le
 
-m@st.cache_resource
+#m@st.cache_resource
 
 # ============================================================
 # Bean Class Info
