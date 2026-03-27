@@ -24,12 +24,13 @@ def load_artifacts():
 
     model_path = os.path.join(BASE_DIR, "svm_tuned.pkl")
     encoder_path = os.path.join(BASE_DIR, "label_encoder.pkl")
+    scaler_path = os.path.join(BASE_DIR, "scaler.pkl")
 
     with open(model_path, "rb") as f:
         model = pickle.load(f)
     with open(encoder_path, "rb") as f:
         le = pickle.load(f)
-    with open(os.path.join(BASE_DIR, "scaler.pkl"), "rb") as f:  # ← scaler.pkl must exist
+    with open(scaler_path, "rb") as f:  # ← scaler.pkl must exist
         scaler = pickle.load(f)
 
     return model, le, scaler  # ← must return all 3
