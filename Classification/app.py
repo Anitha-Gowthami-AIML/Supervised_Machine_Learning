@@ -4,6 +4,7 @@ import streamlit as st
 import pickle
 import numpy as np
 import pandas as pd
+import os
 
 # ============================================================
 # Page Config
@@ -17,31 +18,32 @@ st.set_page_config(
 # ============================================================
 # Load Model & Encoder
 # ============================================================
-import os   
-
 @st.cache_resource
 def load_artifacts():
-    BASE_DIR = os.path.dirname(__file__)   # ✅ ADD HERE
-    
+    BASE_DIR = os.path.dirname(__file__)
+
     model_path = os.path.join(BASE_DIR, "svm_tuned.pkl")
     encoder_path = os.path.join(BASE_DIR, "label_encoder.pkl")
 
+    if not os.path.exists(model_path):
+        st.error(f"Model file not found: {model_path}")
+        st.stop()
+
+    if not os.path.exists(encoder_path):
+        st.error(f"Encoder file not found: {encoder_path}")
+        st.stop()
+
     with open(model_path, "rb") as f:
         model = pickle.load(f)
+
     with open(encoder_path, "rb") as f:
         le = pickle.load(f)
 
     return model, le
-#========================================================
 
-#def load_artifacts():
-#    with open("svm_tuned.pkl", "rb") as f:
-#        model = pickle.load(f)
-#    with open("label_encoder.pkl", "rb") as f:
-#        le = pickle.load(f)
-#    return model, le
 
-#m@st.cache_resource
+# ✅ IMPORTANT: CALL FUNCTION HERE
+model, le = load_artifacts()
 
 # ============================================================
 # Bean Class Info
@@ -71,110 +73,77 @@ st.subheader("📏 Bean Measurements")
 col1, col2 = st.columns(2)
 
 with col1:
-    area            = st.number_input("Area",             min_value=0.0,  value=50000.0,  step=100.0,   help="Area of the bean zone (pixels)")
-    perimeter       = st.number_input("Perimeter",        min_value=0.0,  value=900.0,    step=1.0,     help="Bean circumference (pixels)")
-    major_axis      = st.number_input("Major Axis Length",min_value=0.0,  value=350.0,    step=1.0,     help="Longest diameter of the bean")
-    minor_axis      = st.number_input("Minor Axis Length",min_value=0.0,  value=200.0,    step=1.0,     help="Shortest diameter of the bean")
-    aspect_ratio    = st.number_input("Aspect Ratio",     min_value=0.0,  value=1.75,     step=0.01,    help="Major axis / Minor axis")
-    eccentricity    = st.number_input("Eccentricity",     min_value=0.0,  max_value=1.0,  value=0.82,   step=0.01, help="Eccentricity of the ellipse (0=circle, 1=line)")
-    convex_area     = st.number_input("Convex Area",      min_value=0.0,  value=52000.0,  step=100.0,   help="Smallest convex polygon area")
+    area = st.number_input("Area", 0.0, value=50000.0)
+    perimeter = st.number_input("Perimeter", 0.0, value=900.0)
+    major_axis = st.number_input("Major Axis Length", 0.0, value=350.0)
+    minor_axis = st.number_input("Minor Axis Length", 0.0, value=200.0)
+    aspect_ratio = st.number_input("Aspect Ratio", 0.0, value=1.75)
+    eccentricity = st.number_input("Eccentricity", 0.0, 1.0, value=0.82)
+    convex_area = st.number_input("Convex Area", 0.0, value=52000.0)
 
 with col2:
-    equiv_diameter  = st.number_input("Equiv. Diameter",  min_value=0.0,  value=250.0,    step=1.0,     help="Diameter of a circle with same area")
-    extent          = st.number_input("Extent",           min_value=0.0,  max_value=1.0,  value=0.75,   step=0.01, help="Ratio of pixels in bounding box")
-    solidity        = st.number_input("Solidity",         min_value=0.0,  max_value=1.0,  value=0.98,   step=0.001,help="Area / Convex Area ratio")
-    roundness       = st.number_input("Roundness",        min_value=0.0,  max_value=1.0,  value=0.78,   step=0.01, help="Circularity measure")
-    compactness     = st.number_input("Compactness",      min_value=0.0,  max_value=1.0,  value=0.75,   step=0.01, help="Roundness of the bean")
-    shape_factor1   = st.number_input("Shape Factor 1",   min_value=0.0,  value=0.006,    step=0.0001,  format="%.4f", help="Major axis related shape descriptor")
-    shape_factor2   = st.number_input("Shape Factor 2",   min_value=0.0,  value=0.0018,   step=0.0001,  format="%.4f", help="Minor axis related shape descriptor")
+    equiv_diameter = st.number_input("Equiv. Diameter", 0.0, value=250.0)
+    extent = st.number_input("Extent", 0.0, 1.0, value=0.75)
+    solidity = st.number_input("Solidity", 0.0, 1.0, value=0.98)
+    roundness = st.number_input("Roundness", 0.0, 1.0, value=0.78)
+    compactness = st.number_input("Compactness", 0.0, 1.0, value=0.75)
+    shape_factor1 = st.number_input("Shape Factor 1", 0.0, value=0.006, format="%.4f")
+    shape_factor2 = st.number_input("Shape Factor 2", 0.0, value=0.0018, format="%.4f")
 
 col3, col4 = st.columns(2)
 with col3:
-    shape_factor3   = st.number_input("Shape Factor 3",   min_value=0.0,  max_value=1.0,  value=0.64,   step=0.01, help="Compactness related descriptor")
+    shape_factor3 = st.number_input("Shape Factor 3", 0.0, 1.0, value=0.64)
 with col4:
-    shape_factor4   = st.number_input("Shape Factor 4",   min_value=0.0,  max_value=1.0,  value=0.99,   step=0.01, help="Convexity related descriptor")
+    shape_factor4 = st.number_input("Shape Factor 4", 0.0, 1.0, value=0.99)
 
 # ============================================================
 # Predict Button
 # ============================================================
 st.markdown("---")
 
-if st.button("🔍 Predict Bean Class", use_container_width=True, type="primary"):
+if st.button("🔍 Predict Bean Class", use_container_width=True):
 
-    # Assemble feature vector (must match training column order)
-    features = np.array([[
-        area, perimeter, major_axis, minor_axis,
-        aspect_ratio, eccentricity, convex_area,
-        equiv_diameter, extent, solidity,
-        roundness, compactness,
-        shape_factor1, shape_factor2, shape_factor3, shape_factor4
-    ]])
+    try:
+        features = np.array([[
+            area, perimeter, major_axis, minor_axis,
+            aspect_ratio, eccentricity, convex_area,
+            equiv_diameter, extent, solidity,
+            roundness, compactness,
+            shape_factor1, shape_factor2, shape_factor3, shape_factor4
+        ]])
 
-    # Predict
-    pred_encoded    = model.predict(features)
-    pred_proba      = model.predict_proba(features)[0] if hasattr(model, "predict_proba") else None
-    pred_class      = le.inverse_transform(pred_encoded)[0]
+        pred_encoded = model.predict(features)
+        pred_class = le.inverse_transform(pred_encoded)[0]
 
-    # ---- Result Card ----
-    st.markdown("---")
-    st.subheader("🎯 Prediction Result")
+        pred_proba = model.predict_proba(features)[0] if hasattr(model, "predict_proba") else None
 
-    info = bean_info.get(pred_class, {"emoji": "🫘", "desc": "Bean variety"})
+        st.subheader("🎯 Prediction Result")
 
-    st.success(f"### {info['emoji']}  Predicted Class: **{pred_class}**")
-    st.info(f"📖 {info['desc']}")
+        info = bean_info.get(pred_class, {"emoji": "🫘", "desc": "Bean variety"})
+        st.success(f"{info['emoji']} Predicted Class: **{pred_class}**")
+        st.info(info["desc"])
 
-    # ---- Confidence Bar (if SVM with probability=True or LR) ----
-    if pred_proba is not None:
-        st.markdown("#### 📊 Class Probabilities")
-        classes = le.inverse_transform(np.arange(len(pred_proba)))
-        prob_df = pd.DataFrame({
-            "Bean Class": classes,
-            "Confidence": pred_proba
-        }).sort_values("Confidence", ascending=False).reset_index(drop=True)
+        if pred_proba is not None:
+            st.subheader("📊 Class Probabilities")
+            classes = le.inverse_transform(np.arange(len(pred_proba)))
+            prob_df = pd.DataFrame({
+                "Bean Class": classes,
+                "Confidence": pred_proba
+            }).sort_values("Confidence", ascending=False)
 
-        # Highlight top prediction
-        prob_df["Confidence %"] = (prob_df["Confidence"] * 100).round(2).astype(str) + "%"
+            st.dataframe(prob_df, use_container_width=True)
+            st.bar_chart(prob_df.set_index("Bean Class"))
 
-        st.dataframe(
-            prob_df[["Bean Class", "Confidence %"]],
-            use_container_width=True,
-            hide_index=True
-        )
-        st.bar_chart(prob_df.set_index("Bean Class")["Confidence"])
-
-    # ---- Input Summary ----
-    with st.expander("📋 View Input Summary"):
-        input_df = pd.DataFrame({
-            "Feature": [
-                "Area", "Perimeter", "Major Axis Length", "Minor Axis Length",
-                "Aspect Ratio", "Eccentricity", "Convex Area",
-                "Equiv. Diameter", "Extent", "Solidity",
-                "Roundness", "Compactness",
-                "Shape Factor 1", "Shape Factor 2", "Shape Factor 3", "Shape Factor 4"
-            ],
-            "Value": features[0]
-        })
-        st.dataframe(input_df, use_container_width=True, hide_index=True)
+    except Exception as e:
+        st.error(f"Prediction error: {e}")
 
 # ============================================================
-# Sidebar — About
+# Sidebar
 # ============================================================
 with st.sidebar:
     st.header("ℹ️ About")
-    st.markdown("""
-    This app predicts the **variety of dry bean** based on physical measurements
-    extracted from images.
+    st.write("Dry Bean Classification using SVM")
 
-    **Model:** SVM (Tuned)
-    **Dataset:** Dry Bean Dataset (UCI)
-    **Classes:** 7 bean varieties
-    """)
-
-    st.markdown("---")
     st.header("🫘 Bean Classes")
     for cls, meta in bean_info.items():
-        st.markdown(f"{meta['emoji']} **{cls}** — {meta['desc']}")
-
-    st.markdown("---")
-    st.caption("Built with Streamlit + Scikit-learn")
+        st.write(f"{meta['emoji']} {cls} - {meta['desc']}")
