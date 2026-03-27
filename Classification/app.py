@@ -41,11 +41,8 @@ def load_artifacts():
 #        le = pickle.load(f)
 #    return model, le
 
-model, le = load_artifacts()
-#import os
-import os
-st.write(os.listdir(BASE_DIR))
-st.write("Files in directory:", os.listdir())
+m@st.cache_resource
+
 # ============================================================
 # Bean Class Info
 # ============================================================
