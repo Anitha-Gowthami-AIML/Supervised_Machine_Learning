@@ -101,10 +101,15 @@ if st.button("🔍 Predict Bean Class", use_container_width=True, type="primary"
         roundness, compactness,
         shape_factor1, shape_factor2, shape_factor3, shape_factor4
     ]])
-
+    
     # Predict
-    pred_encoded = model.predict(features)
-    pred_proba   = model.predict_proba(features)[0] if hasattr(model, "predict_proba") else None
+    # ✅ ADD THIS LINE HERE
+    features_scaled = scaler.transform(features)
+    
+    # Predict  ← then these two lines use features_scaled instead of features
+    pred_encoded = model.predict(features_scaled)
+    pred_proba   = model.predict_proba(features_scaled)[0] if hasattr(model, "predict_proba") else None
+    
     pred_class   = le.inverse_transform(pred_encoded)[0]
 
     # ---- Result Card ----
