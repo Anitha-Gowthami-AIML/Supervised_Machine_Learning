@@ -8,3 +8,4 @@ streamlit
 imbalanced-learn
 jupyter
 notebook
+altair
