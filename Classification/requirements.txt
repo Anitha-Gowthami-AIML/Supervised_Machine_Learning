@@ -9,3 +9,4 @@ imbalanced-learn
 jupyter
 notebook
 altair
+joblib
