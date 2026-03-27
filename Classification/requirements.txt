@@ -8,5 +8,5 @@ streamlit
 imbalanced-learn
 jupyter
 notebook
-altair
+altair==4.2.2
 joblib
