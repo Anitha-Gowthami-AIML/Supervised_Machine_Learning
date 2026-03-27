@@ -16,24 +16,22 @@ st.set_page_config(
 )
 
 # ============================================================
-# Load Model & Encoder
+# Load Model, Scaler & Encoder
 # ============================================================
 @st.cache_resource
 def load_artifacts():
     BASE_DIR = os.path.dirname(__file__)
 
-    model_path = os.path.join(BASE_DIR, "svm_tuned.pkl")
-    encoder_path = os.path.join(BASE_DIR, "label_encoder.pkl")
-
-    with open(model_path, "rb") as f:
+    with open(os.path.join(BASE_DIR, "svm_tuned.pkl"), "rb") as f:
         model = pickle.load(f)
-    with open(encoder_path, "rb") as f:
+    with open(os.path.join(BASE_DIR, "label_encoder.pkl"), "rb") as f:
         le = pickle.load(f)
+    with open(os.path.join(BASE_DIR, "scaler.pkl"), "rb") as f:
+        scaler = pickle.load(f)
 
-    return model, le
+    return model, le, scaler
 
-# ✅ FIX: Actually call the function and assign to module-level variables
-model, le = load_artifacts()
+model, le, scaler = load_artifacts()
 
 # ============================================================
 # Bean Class Info
@@ -102,10 +100,13 @@ if st.button("🔍 Predict Bean Class", use_container_width=True, type="primary"
         shape_factor1, shape_factor2, shape_factor3, shape_factor4
     ]])
 
+    # ✅ FIX: Apply the same StandardScaler used during training
+    features_scaled = scaler.transform(features)
+
     # Predict
-    pred_encoded    = model.predict(features)
-    pred_proba      = model.predict_proba(features)[0] if hasattr(model, "predict_proba") else None
-    pred_class      = le.inverse_transform(pred_encoded)[0]
+    pred_encoded = model.predict(features_scaled)
+    pred_proba   = model.predict_proba(features_scaled)[0] if hasattr(model, "predict_proba") else None
+    pred_class   = le.inverse_transform(pred_encoded)[0]
 
     # ---- Result Card ----
     st.markdown("---")
@@ -116,7 +117,7 @@ if st.button("🔍 Predict Bean Class", use_container_width=True, type="primary"
     st.success(f"### {info['emoji']}  Predicted Class: **{pred_class}**")
     st.info(f"📖 {info['desc']}")
 
-    # ---- Confidence Bar (if SVM with probability=True or LR) ----
+    # ---- Confidence Bar (if SVM with probability=True) ----
     if pred_proba is not None:
         st.markdown("#### 📊 Class Probabilities")
         classes = le.inverse_transform(np.arange(len(pred_proba)))
@@ -144,7 +145,7 @@ if st.button("🔍 Predict Bean Class", use_container_width=True, type="primary"
                 "Roundness", "Compactness",
                 "Shape Factor 1", "Shape Factor 2", "Shape Factor 3", "Shape Factor 4"
             ],
-            "Value": features[0]
+            "Value": features[0]  # show original unscaled values to the user
         })
         st.dataframe(input_df, use_container_width=True, hide_index=True)
 
