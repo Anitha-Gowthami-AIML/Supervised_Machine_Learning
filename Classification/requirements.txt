@@ -10,3 +10,5 @@ jupyter
 notebook
 altair==4.2.2
 joblib
+python==3.11
+pillow
