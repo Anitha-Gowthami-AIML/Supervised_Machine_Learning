@@ -17,16 +17,35 @@ st.set_page_config(
 # ============================================================
 # Load Model & Encoder
 # ============================================================
+import os   # ✅ add this at the top of your file
+
 @st.cache_resource
 def load_artifacts():
-    with open("svm_tuned.pkl", "rb") as f:
+    BASE_DIR = os.path.dirname(__file__)   # ✅ ADD HERE
+    
+    model_path = os.path.join(BASE_DIR, "svm_tuned.pkl")
+    encoder_path = os.path.join(BASE_DIR, "label_encoder.pkl")
+
+    with open(model_path, "rb") as f:
         model = pickle.load(f)
-    with open("label_encoder.pkl", "rb") as f:
+    with open(encoder_path, "rb") as f:
         le = pickle.load(f)
+
     return model, le
+#========================================================
+@st.cache_resource
+#def load_artifacts():
+#    with open("svm_tuned.pkl", "rb") as f:
+#        model = pickle.load(f)
+#    with open("label_encoder.pkl", "rb") as f:
+#        le = pickle.load(f)
+#    return model, le
 
 model, le = load_artifacts()
-
+#import os
+import os
+st.write(os.listdir(BASE_DIR))
+st.write("Files in directory:", os.listdir())
 # ============================================================
 # Bean Class Info
 # ============================================================
