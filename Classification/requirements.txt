@@ -2,10 +2,7 @@ pandas
 numpy
 matplotlib
 seaborn
-scikit-learn
+scikit-learn==1.6.1
 openpyxl
-streamlit==1.45.0
+streamlit
 imbalanced-learn
-joblib
-pillow
-
