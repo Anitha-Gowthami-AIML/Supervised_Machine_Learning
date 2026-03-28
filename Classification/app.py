@@ -9,17 +9,20 @@ import pickle
 import numpy as np
 import pandas as pd
 
-# Load model and encoders
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 @st.cache_resource
 def load_artifacts():
-    with open('best_model.pkl', 'rb') as f:
+    with open(os.path.join(BASE_DIR, 'best_model.pkl'), 'rb') as f:
         model = pickle.load(f)
-    with open('label_encoder.pkl', 'rb') as f:
+    with open(os.path.join(BASE_DIR, 'label_encoder.pkl'), 'rb') as f:
         le = pickle.load(f)
-    with open('feature_names.pkl', 'rb') as f:
+    with open(os.path.join(BASE_DIR, 'feature_names.pkl'), 'rb') as f:
         feature_names = pickle.load(f)
     return model, le, feature_names
-
+    
 model, le, feature_names = load_artifacts()
 
 # App title
