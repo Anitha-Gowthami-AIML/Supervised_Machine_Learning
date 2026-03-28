@@ -4,5 +4,7 @@ matplotlib
 seaborn
 scikit-learn==1.6.1
 openpyxl
-streamlit
+streamlit==1.45.0
 imbalanced-learn
+joblib
+pillow
